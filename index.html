@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="CRISP-Community: Colorectal Cancer Risk Stratification Tool for resource-limited settings" />
+  <title>CRISP-Community – Colorectal Cancer Risk Stratification Tool</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #151a2e;
+      --muted: #7b86a7;
+      --text: #e6ecff;
+      --accent: #6ee7ff;
+      --low: #c8e6c9;
+      --med: #fff3cd;
+      --high: #f8d7da;
+      --low-t: #256029;
+      --med-t: #856404;
+      --high-t: #721c24;
+      --urgent: #ffb3b3;
+      --urgent-t: #990000;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .title {
+      font-weight: 800;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 600px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      background: #102038;
+      color: var(--accent);
+      border: 1px solid rgba(110, 231, 255, 0.35);
+      font-size: 0.8rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 8px;
+    }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid transparent;
+    }
+    .tab.active {
+      background: rgba(110, 231, 255, 0.15);
+      border-color: rgba(110, 231, 255, 0.3);
+      font-weight: 600;
+    }
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      margin-bottom: 20px;
+    }
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+    legend {
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .section {
+      display: grid;
+      gap: 12px;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.4;
+    }
+    input[type="number"], select, input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #0f1427;
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-style: italic;
+      margin-top: 4px;
+    }
+    .btnbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    button {
+      appearance: none;
+      border: none;
+      background: #1d2542;
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    button.primary {
+      background: linear-gradient(180deg, #1c3b57, #11293e);
+      border-color: #2b4d6d;
+    }
+    button.ghost {
+      background: transparent;
+    }
+    .result {
+      margin-top: 20px;
+    }
+    .scorebox {
+      display: grid;
+      gap: 14px;
+    }
+    .score {
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+    .riskBadge {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+    .low {
+      background: var(--low);
+      color: var(--low-t);
+    }
+    .medium {
+      background: var(--med);
+      color: var(--med-t);
+    }
+    .high {
+      background: var(--high);
+      color: var(--high-t);
+    }
+    .urgent {
+      background: var(--urgent);
+      color: var(--urgent-t);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.8; }
+      100% { opacity: 1; }
+    }
+    .explain {
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    details {
+      background: #0f1427;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 12px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .breakdown {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95rem;
+      margin-top: 10px;
+    }
+    footer {
+      margin-top: 30px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 10px;
+    }
+    .stickyActions {
+      position: sticky;
+      bottom: 0;
+      backdrop-filter: blur(8px);
+      padding: 15px 0;
+      background: rgba(11, 16, 32, 0.8);
+      margin-top: 20px;
+    }
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+    }
+    .step.active {
+      background: rgba(110, 231, 255, 0.15);
+      font-weight: 600;
+    }
+    .hidden {
+      display: none;
+    }
+    .urgent-note {
+      border-left: 4px solid #ff5555;
+      padding-left: 12px;
+      margin: 15px 0;
+    }
+    @media (max-width: 768px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 15px;
+      }
+      .card {
+        padding: 15px;
+      }
+    }
+    .print-only {
+      display: none;
+    }
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+      .card {
+        border: 1px solid #ddd;
+        box-shadow: none;
+        background: white;
+      }
+      .btnbar, .tabs, .step-indicator, .stickyActions {
+        display: none;
+      }
+      .print-only {
+        display: block;
+      }
+      .hidden {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="title">CRISP-Community – Colorectal Cancer Risk Stratification</div>
+        <div class="subtitle">Simplified two-step assessment for resource-limited settings. Start with Red Flag Triage, then complete Comprehensive Assessment if needed.</div>
+      </div>
+      <div class="pill">v2.0 Community Edition</div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" id="tab-triage">Step 1: Red Flag Triage</div>
+      <div class="tab" id="tab-comprehensive">Step 2: Comprehensive Assessment</div>
+    </div>
+
+    <div class="step-indicator">
+      <div class="step active">1. Red Flag Check</div>
+      <div class="step">2. Risk Assessment</div>
+      <div class="step">3. Results & Guidance</div>
+    </div>
+
+    <!-- STEP 1: RED FLAG TRIAGE -->
+    <section id="triage-section">
+      <div class="card">
+        <h2>Community Red Flag Triage</h2>
+        <p class="hint">For community health workers: Ask these questions to anyone aged 40 years or older.</p>
+        
+        <form id="triageForm">
+          <fieldset class="section">
+            <div class="urgent-note">
+              <p><strong>Refer immediately to clinic if ANY answer is YES:</strong></p>
+            </div>
+            
+            <label><input type="checkbox" id="triage_bleeding" /> Rectal bleeding or blood in stool (last 6 months)</label>
+            <label><input type="checkbox" id="triage_weightloss" /> Unintentional weight loss (last 6 months)</label>
+            <label><input type="checkbox" id="triage_bowelchange" /> Major persistent change in bowel habits (>1 month)</label>
+            <label><input type="checkbox" id="triage_family" /> First-degree relative with colorectal cancer</label>
+            <label><input type="checkbox" id="triage_mass" /> Palpable abdominal mass</label>
+          </fieldset>
+          
+          <div class="row">
+            <label>Age
+              <input type="number" id="triage_age" min="0" max="120" placeholder="years" />
+            </label>
+            <label>Name or ID (optional)
+              <input type="text" id="triage_name" placeholder="Optional" />
+            </label>
+          </div>
+        </form>
+        
+        <div class="btnbar">
+          <button class="primary" id="btn-triage-next">No Red Flags → Continue to Assessment</button>
+          <button class="urgent" id="btn-triage-refer">Yes to Any → Refer to Clinic</button>
+          <button class="ghost" id="btn-print-triage">Print Triage Form</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: COMPREHENSIVE ASSESSMENT -->
+    <section id="comprehensive-section" class="hidden">
+      <div class="card">
+        <h2>Comprehensive Risk Assessment</h2>
+        <p class="hint">For clinic use: Complete this assessment for patients without urgent red flags.</p>
+        
+        <form id="crispForm">
+          <!-- 1. Demographics -->
+          <fieldset class="section">
+            <legend>1) Demographics</legend>
+            <div class="row">
+              <label>Age
+                <input type="number" id="age" min="0" max="120" placeholder="years" />
+              </label>
+              <label>Sex
+                <select id="sex">
+                  <option value="">Select…</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- 2. Family History -->
+          <fieldset class="section">
+            <legend>2) Family History</legend>
+            <label><input type="checkbox" id="fhx_fdr" /> First-degree relative with colorectal cancer (any age)</label>
+          </fieldset>
+
+          <!-- 3. Symptoms -->
+          <fieldset class="section">
+            <legend>3) Symptoms</legend>
+            <label><input type="checkbox" id="sx_bleeding" /> Rectal bleeding (last 6 months)</label>
+            <label><input type="checkbox" id="sx_weightloss" /> Unintentional weight loss (>5kg in 6 months)</label>
+            <label><input type="checkbox" id="sx_bowelchange" /> Persistent change in bowel habits (>1 month)</label>
+            <label><input type="checkbox" id="sx_anemia" /> Symptoms of anemia (tiredness, pallor, shortness of breath)</label>
+            <label><input type="checkbox" id="sx_abdominal" /> Unexplained abdominal pain</label>
+          </fieldset>
+
+          <!-- 4. Lifestyle Factors -->
+          <fieldset class="section">
+            <legend>4) Lifestyle Factors</legend>
+            <label><input type="checkbox" id="life_smoke" /> Current tobacco smoker</label>
+            
+            <div class="row">
+              <label>BMI (if measurable)
+                <input type="number" id="life_bmi" step="0.1" placeholder="e.g., 31.2" />
+              </label>
+              <label>Physical activity level
+                <select id="life_activity">
+                  <option value="active">Active</option>
+                  <option value="moderate">Moderate</option>
+                  <option value="sedentary">Sedentary</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- 5. Access Factors -->
+          <fieldset class="section">
+            <legend>5) Access Factors</legend>
+            <label><input type="checkbox" id="access_never" /> Never been screened (if age ≥50)</label>
+            <label><input type="checkbox" id="access_rural" /> Lives in rural area with poor healthcare access</label>
+          </fieldset>
+        </form>
+        
+        <div class="btnbar">
+          <button class="primary" id="btnCalc">Calculate Risk Score</button>
+          <button class="ghost" id="btnBack">Back to Triage</button>
+          <button class="ghost" id="btn-reset-form">Reset Form</button>
+        </div>
+      </div>
+
+      <!-- RESULTS SECTION -->
+      <div class="card">
+        <h2>Risk Assessment Result</h2>
+        <div id="result" class="result">
+          <div class="hint">Complete the form and click <b>Calculate Risk Score</b> to see results.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p><b>CRISP-Community v2.0</b> – Simplified CRC risk stratification for resource-limited settings. No data are transmitted or stored.</p>
+      <p>This tool is designed for healthcare workers in resource-limited settings and should be used alongside clinical judgment.</p>
+    </footer>
+  </div>
+
+  <script>
+    // DOM elements
+    const triageSection = document.getElementById('triage-section');
+    const comprehensiveSection = document.getElementById('comprehensive-section');
+    const tabTriage = document.getElementById('tab-triage');
+    const tabComprehensive = document.getElementById('tab-comprehensive');
+    const steps = document.querySelectorAll('.step');
+    
+    // Initialize UI state
+    function showTriage() {
+      triageSection.classList.remove('hidden');
+      comprehensiveSection.classList.add('hidden');
+      tabTriage.classList.add('active');
+      tabComprehensive.classList.remove('active');
+      steps[0].classList.add('active');
+      steps[1].classList.remove('active');
+      steps[2].classList.remove('active');
+    }
+    
+    function showComprehensive() {
+      triageSection.classList.add('hidden');
+      comprehensiveSection.classList.remove('hidden');
+      tabTriage.classList.remove('active');
+      tabComprehensive.classList.add('active');
+      steps[0].classList.remove('active');
+      steps[1].classList.add('active');
+      steps[2].classList.remove('active');
+    }
+    
+    function showResults() {
+      steps[0].classList.remove('active');
+      steps[1].classList.remove('active');
+      steps[2].classList.add('active');
+    }
+    
+    // Tab navigation
+    tabTriage.addEventListener('click', showTriage);
+    tabComprehensive.addEventListener('click', showComprehensive);
+    
+    // Triage form actions
+    document.getElementById('btn-triage-next').addEventListener('click', function() {
+      // Check if any red flags are selected
+      const hasRedFlags = 
+        document.getElementById('triage_bleeding').checked ||
+        document.getElementById('triage_weightloss').checked ||
+        document.getElementById('triage_bowelchange').checked ||
+        document.getElementById('triage_family').checked ||
+        document.getElementById('triage_mass').checked;
+        
+      if (hasRedFlags) {
+        alert('Please refer this person to a clinic immediately based on the red flags identified.');
+        return;
+      }
+      
+      // Transfer age value to comprehensive form
+      const triageAge = document.getElementById('triage_age').value;
+      if (triageAge) {
+        document.getElementById('age').value = triageAge;
+      }
+      
+      showComprehensive();
+    });
+    
+    document.getElementById('btn-triage-refer').addEventListener('click', function() {
+      alert('Referral needed: This person should be seen at a clinic based on red flags.');
+    });
+    
+    // Print functionality
+    document.getElementById('btn-print-triage').addEventListener('click', function() {
+      window.print();
+    });
+    
+    // Back button
+    document.getElementById('btnBack').addEventListener('click', showTriage);
+    
+    // Reset form
+    document.getElementById('btn-reset-form').addEventListener('click', function() {
+      document.getElementById('crispForm').reset();
+      document.getElementById('result').innerHTML = '<div class="hint">Complete the form and click <b>Calculate Risk Score</b> to see results.</div>';
+    });
+    
+    // Risk calculation
+    document.getElementById('btnCalc').addEventListener('click', function() {
+      computeScore();
+      showResults();
+    });
+    
+    // Simplified scoring for resource-poor settings
+    function computeScore() {
+      let score = 0;
+      let expl = [];
+      
+      // 1. Age
+      const age = parseInt(document.getElementById('age').value || '0', 10);
+      if (age >= 50 && age <= 59) { score += 4; expl.push('Age 50-59: +4'); }
+      else if (age >= 60 && age <= 69) { score += 6; expl.push('Age 60-69: +6'); }
+      else if (age >= 70) { score += 8; expl.push('Age ≥70: +8'); }
+      
+      // 2. Sex
+      if (document.getElementById('sex').value === 'Male') { 
+        score += 2; 
+        expl.push('Male sex: +2'); 
+      }
+      
+      // 3. Family History
+      if (document.getElementById('fhx_fdr').checked) { 
+        score += 8; 
+        expl.push('First-degree relative with CRC: +8'); 
+      }
+      
+      // 4. Symptoms
+      if (document.getElementById('sx_bleeding').checked) { 
+        score += 8; 
+        expl.push('Rectal bleeding: +8'); 
+      }
+      if (document.getElementById('sx_weightloss').checked) { 
+        score += 6; 
+        expl.push('Unintentional weight loss: +6'); 
+      }
+      if (document.getElementById('sx_bowelchange').checked) { 
+        score += 6; 
+        expl.push('Persistent bowel habit change: +6'); 
+      }
+      if (document.getElementById('sx_anemia').checked) { 
+        score += 8; 
+        expl.push('Symptoms of anemia: +8'); 
+      }
+      if (document.getElementById('sx_abdominal').checked) { 
+        score += 6; 
+        expl.push('Unexplained abdominal pain: +6'); 
+      }
+      
+      // 5. Lifestyle
+      if (document.getElementById('life_smoke').checked) { 
+        score += 3; 
+        expl.push('Current smoker: +3'); 
+      }
+      
+      const bmi = parseFloat(document.getElementById('life_bmi').value || '0');
+      if (bmi >= 30) { 
+        score += 2; 
+        expl.push('Obesity (BMI ≥30): +2'); 
+      }
+      
+      if (document.getElementById('life_activity').value === 'sedentary') { 
+        score += 1; 
+        expl.push('Sedentary lifestyle: +1'); 
+      }
+      
+      // 6. Access
+      if (document.getElementById('access_never').checked) { 
+        score += 5; 
+        expl.push('Never screened (age ≥50): +5'); 
+      }
+      if (document.getElementById('access_rural').checked) { 
+        score += 3; 
+        expl.push('Rural with poor access: +3'); 
+      }
+      
+      // Determine risk category
+      let category = 'Low';
+      let badgeClass = 'low';
+      let guidance = 'Health Education & Awareness. Educate on symptoms (red flags). Encourage healthy diet and exercise. If available, offer FIT screening.';
+      
+      if (score >= 10 && score <= 19) {
+        category = 'Moderate';
+        badgeClass = 'medium';
+        guidance = 'Priority for non-invasive testing. Offer FIT if available. Ensure follow-up for results. If FIT positive, refer for further evaluation.';
+      } else if (score >= 20) {
+        category = 'High';
+        badgeClass = 'high';
+        guidance = 'Urgent referral for diagnostic evaluation. Refer for colonoscopy if available. If not available, refer to surgeon for evaluation. Flag for heightened surveillance.';
+      }
+      
+      // Display results
+      const res = document.getElementById('result');
+      res.innerHTML = `
+        <div class="scorebox">
+          <div class="score">Total Score: <span>${score}</span></div>
+          <div class="riskBadge ${badgeClass}">Risk Category: ${category}</div>
+          <div class="explain"><b>Recommended Action:</b> ${guidance}</div>
+          <details>
+            <summary>Show scoring details</summary>
+            <div class="breakdown">${expl.map(x => '• ' + x).join('<br>')}</div>
+          </details>
+        </div>
+        <div class="btnbar">
+          <button class="ghost" onclick="window.print()">Print Results</button>
+        </div>`;
+    }
+    
+    // Initialize the interface
+    showTriage();
+  </script>
+</body>
+</html>
